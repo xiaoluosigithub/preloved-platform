@@ -11,7 +11,7 @@ public interface CommentMapper {
   @Options(useGeneratedKeys=true, keyProperty="id")
   int insert(Comment c);
 
-  @Select("<script>SELECT c.id, c.product_id, c.user_id, c.content, c.created_at, u.username, u.nickname FROM comment c LEFT JOIN `user` u ON c.user_id = u.id WHERE c.product_id = #{productId} ORDER BY c.created_at DESC LIMIT #{offset}, #{limit}</script>")
+  @Select("<script>SELECT c.id, c.product_id, c.user_id, c.content, c.created_at, u.username, u.nickname, u.avatar FROM comment c LEFT JOIN `user` u ON c.user_id = u.id WHERE c.product_id = #{productId} ORDER BY c.created_at DESC LIMIT #{offset}, #{limit}</script>")
   @Results({
     @Result(column="id", property="id"),
     @Result(column="product_id", property="productId"),

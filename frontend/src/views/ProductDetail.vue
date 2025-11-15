@@ -8,7 +8,8 @@
       </div>
       <div v-html="product.description"></div>
 
-      <div style="margin-top:12px">
+      <div style="margin-top:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <el-button @click="$router.push('/')">返回首页</el-button>
         <el-button type="text" @click="toggleLike">👍 {{ likeCount }} {{ isLiked ? '(已点赞)' : '' }}</el-button>
         <el-button type="text" @click="toggleFavorite">⭐ {{ favorCount }} {{ isFavorited ? '(已收藏)' : '' }}</el-button>
         <el-button type="primary" @click="goBuy" style="margin-left:8px" :disabled="product.status!=='AVAILABLE'">立即购买</el-button>
@@ -21,10 +22,13 @@
 
       <div style="margin-top:20px">
         <el-divider>评论 ({{ commentsTotal }})</el-divider>
-        <div v-for="c in comments" :key="c.id" style="padding:8px 0;border-bottom:1px solid #f0f0f0">
-          <div style="font-weight:600">{{ c.nickname || c.username }}</div>
-          <div style="color:#666;font-size:13px">{{ c.content }}</div>
-          <div style="color:#999;font-size:12px">{{ c.created_at }}</div>
+        <div v-for="c in comments" :key="c.id" style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #f0f0f0">
+          <img :src="c.avatar || defaultAvatar" style="width:36px;height:36px;border-radius:50%" />
+          <div style="max-width:700px">
+            <div style="font-weight:600">{{ c.nickname || c.username }}</div>
+            <div style="background:#f5f7fa;border-radius:8px;padding:8px 12px;color:#333;line-height:1.6">{{ c.content }}</div>
+            <div style="color:#999;font-size:12px;margin-top:6px">{{ c.created_at }}</div>
+          </div>
         </div>
         <el-pagination background layout="prev, pager, next" :page-size="commentsSize" :current-page="commentsPage" :total="commentsTotal" @current-change="onCommentsPageChange" />
       </div>
@@ -37,7 +41,7 @@ import api from '@/api'
 import { ElMessageBox } from 'element-plus'
 export default {
   props: ['id'],
-  data(){ return { product:{}, images:[], comments:[], commentText:'', isFavorited:false, favorCount:0, isLiked:false, likeCount:0, commentsPage:1, commentsSize:10, commentsTotal:0 } },
+  data(){ return { product:{}, images:[], comments:[], commentText:'', isFavorited:false, favorCount:0, isLiked:false, likeCount:0, commentsPage:1, commentsSize:10, commentsTotal:0, defaultAvatar:'https://via.placeholder.com/36' } },
   async mounted(){
     const pid = this.$route.params.id || this.id
     const res = await api.get(`/products/${pid}`)

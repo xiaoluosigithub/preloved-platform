@@ -6,7 +6,10 @@
       <div style="margin:12px 0">
         <img v-for="(u,i) in images" :key="i" :src="u" style="width:160px;margin-right:8px"/>
       </div>
-      <el-button type="primary" @click="confirmBuy">确认购买</el-button>
+      <div style="display:flex;gap:8px">
+        <el-button type="primary" @click="confirmBuy">确认购买</el-button>
+        <el-button @click="$router.push('/product/'+product.id)">取消</el-button>
+      </div>
     </el-card>
   </div>
 </template>
