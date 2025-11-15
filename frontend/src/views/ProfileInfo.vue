@@ -15,98 +15,19 @@
         class="profile-form"
         @submit.prevent="save">
         
-        <!-- Avatar Section -->
         <el-form-item label="头像" class="avatar-form-item">
-          <div class="avatar-upload-section">
-            <div class="avatar-preview">
-              <img 
-                v-if="form.avatar" 
-                :src="form.avatar" 
-                class="avatar-image"
-                alt="用户头像"
-              />
-              <div v-else class="avatar-placeholder">
-                <el-icon size="32"><User /></el-icon>
-              </div>
-            </div>
-            <div class="avatar-actions">
-              <el-upload 
-                :action="'/api/upload/image'" 
-                :on-success="onAvatarUpload" 
-                :show-file-list="false" 
-                name="file"
-                class="avatar-upload">
-                <el-button type="primary" :icon="Camera" size="default">
-                  上传头像
-                </el-button>
-              </el-upload>
-              <el-button 
-                v-if="form.avatar" 
-                type="text" 
-                @click="removeAvatar"
-                class="remove-avatar-btn">
-                移除头像
-              </el-button>
-            </div>
-          </div>
+          <AvatarUploader v-model="form.avatar" />
         </el-form-item>
 
-        <!-- Basic Info Section -->
-        <div class="form-section">
-          <h3 class="section-title">基本信息</h3>
-          
-          <el-form-item label="昵称" prop="nickname">
-            <el-input 
-              v-model="form.nickname" 
-              placeholder="请输入昵称"
-              size="large"
-              :prefix-icon="User">
-            </el-input>
-          </el-form-item>
-          
-          <el-form-item label="用户名" prop="username">
-            <el-input 
-              v-model="form.username" 
-              disabled
-              size="large"
-              :prefix-icon="Avatar">
-            </el-input>
-          </el-form-item>
-          
-          <el-form-item label="个性签名" prop="signature">
-            <el-input 
-              v-model="form.signature" 
-              type="textarea"
-              :rows="3"
-              placeholder="介绍一下自己吧..."
-              maxlength="100"
-              show-word-limit>
-            </el-input>
-          </el-form-item>
-        </div>
+        <BasicInfoForm 
+          :username="form.username"
+          :nickname="form.nickname"
+          :signature="form.signature"
+          @update:nickname="v => form.nickname = v"
+          @update:signature="v => form.signature = v"
+        />
 
-        <!-- Contact Info Section -->
-        <div class="form-section">
-          <h3 class="section-title">联系信息</h3>
-          
-          <el-form-item label="邮箱" prop="email">
-            <el-input 
-              v-model="form.email" 
-              placeholder="请输入邮箱地址"
-              size="large"
-              :prefix-icon="Message">
-            </el-input>
-          </el-form-item>
-          
-          <el-form-item label="手机号" prop="phone">
-            <el-input 
-              v-model="form.phone" 
-              placeholder="请输入手机号码"
-              size="large"
-              :prefix-icon="Phone">
-            </el-input>
-          </el-form-item>
-        </div>
+        
 
         <!-- Action Buttons -->
         <el-form-item class="form-actions">
@@ -119,13 +40,7 @@
             <el-icon><Check /></el-icon>
             保存修改
           </el-button>
-          <el-button 
-            @click="resetForm"
-            size="large"
-            class="reset-btn">
-            <el-icon><Refresh /></el-icon>
-            重置
-          </el-button>
+          
         </el-form-item>
       </el-form>
     </el-card>
@@ -135,38 +50,30 @@
 <script>
 import { ref, onMounted } from 'vue'
 import { 
-  User, 
-  Avatar, 
-  Message, 
-  Phone, 
-  Camera, 
-  Check, 
-  Refresh 
+  Check,
+  User 
 } from '@element-plus/icons-vue'
 import api from '@/api'
+import { ElMessage } from 'element-plus'
+import AvatarUploader from '@/components/profile/AvatarUploader.vue'
+import BasicInfoForm from '@/components/profile/BasicInfoForm.vue'
 
 export default {
   name: 'ProfileInfo',
   components: {
-    User,
-    Avatar,
-    Message,
-    Phone,
-    Camera,
     Check,
-    Refresh
+    User,
+    AvatarUploader,
+    BasicInfoForm
   },
   setup() {
     const form = ref({
       username: '',
       nickname: '',
       avatar: '',
-      signature: '',
-      email: '',
-      phone: ''
+      signature: ''
     })
     const loading = ref(false)
-    const originalForm = ref({})
 
     const loadUserInfo = async () => {
       try {
@@ -176,29 +83,15 @@ export default {
           username: user.username || '',
           nickname: user.nickname || '',
           avatar: user.avatar || '',
-          signature: user.signature || '',
-          email: user.email || '',
-          phone: user.phone || ''
+          signature: user.signature || ''
         }
-        originalForm.value = { ...form.value }
       } catch (err) {
         console.error('Failed to load user info:', err)
         ElMessage.error('加载用户信息失败')
       }
     }
 
-    const onAvatarUpload = (res) => {
-      const url = res?.data?.data || res?.data || res
-      if (url) {
-        form.value.avatar = url
-        ElMessage.success('头像上传成功')
-      }
-    }
-
-    const removeAvatar = () => {
-      form.value.avatar = ''
-      ElMessage.success('头像已移除')
-    }
+    
 
     const save = async () => {
       if (!form.value.nickname?.trim()) {
@@ -211,9 +104,7 @@ export default {
         await api.post('/user/update', {
           nickname: form.value.nickname,
           avatar: form.value.avatar,
-          signature: form.value.signature,
-          email: form.value.email,
-          phone: form.value.phone
+          signature: form.value.signature
         })
         
         // Refresh user data
@@ -234,10 +125,6 @@ export default {
       }
     }
 
-    const resetForm = () => {
-      form.value = { ...originalForm.value }
-      ElMessage.info('已重置为原始数据')
-    }
 
     onMounted(() => {
       loadUserInfo()
@@ -246,10 +133,8 @@ export default {
     return {
       form,
       loading,
-      onAvatarUpload,
-      removeAvatar,
       save,
-      resetForm
+      
     }
   }
 }
@@ -370,16 +255,11 @@ export default {
 }
 
 .save-btn {
-  background: var(--primary-gradient);
+  background: #409EFF;
   border: none;
+  color: #fff;
   font-weight: 600;
   margin-right: 16px;
-  transition: all 0.3s ease;
-}
-
-.save-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
 }
 
 .reset-btn {

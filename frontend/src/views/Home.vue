@@ -8,117 +8,53 @@
       </div>
     </section>
 
-    <!-- Search and Filter Section -->
     <section class="search-section">
       <el-card class="search-card">
-        <div class="search-controls">
-          <div class="search-group">
-            <el-select 
-              v-model="selectedCategory" 
-              placeholder="选择分类" 
-              @change="fetchList"
-              class="category-select">
-              <el-option :label="'全部分类'" :value="''">
-                <el-icon><Grid /></el-icon>
-                全部分类
-              </el-option>
-              <el-option v-for="c in categories" :key="c.id" :label="c.name" :value="c.id">
-                <el-icon><Goods /></el-icon>
-                {{ c.name }}
-              </el-option>
-            </el-select>
-          </div>
-          
-          <div class="search-group search-input-group">
-            <el-input 
-              v-model="keyword" 
-              placeholder="搜索商品名称、描述..." 
-              @keyup.enter="fetchList"
-              class="search-input">
-              <template #prefix>
-                <el-icon><Search /></el-icon>
-              </template>
-            </el-input>
-            <el-button 
-              type="primary" 
-              @click="fetchList"
-              class="search-btn">
-              搜索
-            </el-button>
-          </div>
-          
-          <div class="search-group">
-            <el-button 
-              type="success" 
-              @click="$router.push('/publish')"
-              class="publish-btn">
-              <el-icon><Plus /></el-icon>
-              发布商品
-            </el-button>
-          </div>
+        <SearchBar 
+          :categories="categories"
+          :selected-category="selectedCategory"
+          :keyword="keyword"
+          @update:selectedCategory="val => selectedCategory = val"
+          @update:keyword="val => keyword = val"
+          @search="fetchList"
+        />
+        <div class="search-group">
+          <el-button 
+            type="success" 
+            @click="$router.push('/publish')"
+            class="publish-btn">
+            <el-icon><Plus /></el-icon>
+            发布商品
+          </el-button>
         </div>
       </el-card>
     </section>
 
-    <!-- Products Grid Section -->
-    <section class="products-section">
-      <div class="section-header">
-        <h2 class="section-title">
-          <el-icon><ShoppingBag /></el-icon>
-          精选商品
-        </h2>
-        <div class="results-info">
-          <span>共找到 {{ total }} 件商品</span>
-        </div>
-      </div>
-
-      <div v-if="loading" class="loading-container">
-        <el-skeleton :rows="3" animated />
-      </div>
-
-      <div v-else-if="items.length === 0" class="empty-state">
-        <el-empty description="暂无商品" />
-        <el-button type="primary" @click="$router.push('/publish')" class="mt-4">
-          立即发布商品
-        </el-button>
-      </div>
-
-      <div v-else class="products-grid">
-        <div v-for="p in items" :key="p.id" class="product-card-wrapper">
-          <product-card :product="p" class="product-card" />
-        </div>
-      </div>
-
-      <div class="pagination-container">
-        <el-pagination
-          background
-          layout="prev, pager, next, jumper, sizes, total"
-          :page-size="size"
-          :current-page="page"
-          :total="total"
-          @current-change="onPageChange"
-          @size-change="onSizeChange"
-          class="modern-pagination" />
-      </div>
-    </section>
+    <ProductsGrid 
+      :items="items"
+      :loading="loading"
+      :total="total"
+      :page="page"
+      :size="size"
+      @page-change="onPageChange"
+      @size-change="onSizeChange"
+    />
   </div>
 </template>
 
 <script>
 import { ref, onMounted } from 'vue'
-import { Search, Grid, Goods, Plus, ShoppingBag } from '@element-plus/icons-vue'
+import { Plus } from '@element-plus/icons-vue'
 import api from '@/api'
-import ProductCard from '@/components/ProductCard.vue'
+import SearchBar from '@/components/home/SearchBar.vue'
+import ProductsGrid from '@/components/home/ProductsGrid.vue'
 
 export default {
   name: 'Home',
   components: { 
-    ProductCard,
-    Search,
-    Grid,
-    Goods,
-    Plus,
-    ShoppingBag
+    SearchBar,
+    ProductsGrid,
+    Plus
   },
   setup() {
     const categories = ref([])
@@ -206,12 +142,13 @@ export default {
 .home-container {
   min-height: 100vh;
   padding: 0 0 40px 0;
+  background: linear-gradient(135deg, #fff5e1 0%, #fde2e4 50%, #e1f0ff 100%);
 }
 
 /* Hero Section */
 .hero-section {
-  background: var(--primary-gradient);
-  color: white;
+  background: transparent;
+  color: #111;
   padding: 60px 20px;
   text-align: center;
   margin-bottom: 40px;
@@ -226,13 +163,14 @@ export default {
   font-size: 3rem;
   font-weight: 700;
   margin-bottom: 16px;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  color: #111;
+  text-shadow: none;
 }
 
 .hero-subtitle {
   font-size: 1.2rem;
-  opacity: 0.9;
   margin: 0;
+  color: #333;
 }
 
 /* Search Section */
@@ -308,12 +246,12 @@ export default {
   gap: 12px;
   font-size: 1.8rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: #111;
   margin: 0;
 }
 
 .results-info {
-  color: var(--text-secondary);
+  color: #111;
   font-size: 0.9rem;
 }
 

@@ -17,97 +17,20 @@
       </div>
     </div>
 
-    <!-- Stats Cards -->
-    <div class="stats-section">
-      <el-row :gutter="16">
-        <el-col :span="6">
-          <el-card class="stat-card">
-            <div class="stat-content">
-              <div class="stat-icon active">
-                <el-icon><Goods /></el-icon>
-              </div>
-              <div class="stat-info">
-                <div class="stat-number">{{ stats.active }}</div>
-                <div class="stat-label">在售商品</div>
-              </div>
-            </div>
-          </el-card>
-        </el-col>
-        <el-col :span="6">
-          <el-card class="stat-card">
-            <div class="stat-content">
-              <div class="stat-icon sold">
-                <el-icon><Sell /></el-icon>
-              </div>
-              <div class="stat-info">
-                <div class="stat-number">{{ stats.sold }}</div>
-                <div class="stat-label">已售商品</div>
-              </div>
-            </div>
-          </el-card>
-        </el-col>
-        <el-col :span="6">
-          <el-card class="stat-card">
-            <div class="stat-content">
-              <div class="stat-icon total">
-                <el-icon><Collection /></el-icon>
-              </div>
-              <div class="stat-info">
-                <div class="stat-number">{{ stats.total }}</div>
-                <div class="stat-label">总发布数</div>
-              </div>
-            </div>
-          </el-card>
-        </el-col>
-        <el-col :span="6">
-          <el-card class="stat-card">
-            <div class="stat-content">
-              <div class="stat-icon views">
-                <el-icon><View /></el-icon>
-              </div>
-              <div class="stat-info">
-                <div class="stat-number">{{ stats.views }}</div>
-                <div class="stat-label">总浏览量</div>
-              </div>
-            </div>
-          </el-card>
-        </el-col>
-      </el-row>
-    </div>
+    <MyStatsCards :stats="stats" />
 
-    <!-- Filter Section -->
-    <el-card class="filter-card">
-      <el-row :gutter="16" align="middle">
-        <el-col :span="8">
-          <el-input
-            v-model="searchQuery"
-            placeholder="搜索商品名称..."
-            clearable
-            :prefix-icon="Search"
-            @input="handleSearch">
-          </el-input>
-        </el-col>
-        <el-col :span="6">
-          <el-select v-model="statusFilter" placeholder="状态筛选" clearable @change="handleFilter">
-            <el-option label="全部" value="" />
-            <el-option label="在售" value="ACTIVE" />
-            <el-option label="已售" value="SOLD" />
-            <el-option label="已下架" value="INACTIVE" />
-          </el-select>
-        </el-col>
-        <el-col :span="6">
-          <el-select v-model="sortBy" placeholder="排序方式" @change="handleSort">
-            <el-option label="最新发布" value="newest" />
-            <el-option label="价格从低到高" value="price_asc" />
-            <el-option label="价格从高到低" value="price_desc" />
-            <el-option label="浏览量最多" value="views" />
-          </el-select>
-        </el-col>
-        <el-col :span="4">
-          <el-button @click="resetFilters" :icon="Refresh">重置</el-button>
-        </el-col>
-      </el-row>
-    </el-card>
+    <MyProductsFilter 
+      :search-query="searchQuery"
+      :status-filter="statusFilter"
+      :sort-by="sortBy"
+      @update:searchQuery="val => { searchQuery = val }"
+      @update:statusFilter="val => { statusFilter = val }"
+      @update:sortBy="val => { sortBy = val }"
+      @search="handleSearch"
+      @filter="handleFilter"
+      @sort="handleSort"
+      @reset="resetFilters"
+    />
 
     <!-- Products Grid -->
     <div class="products-section">
@@ -122,52 +45,12 @@
       
       <el-row v-else :gutter="20" class="products-grid">
         <el-col v-for="product in items" :key="product.id" :span="6" :xs="24" :sm="12" :md="8" :lg="6">
-          <el-card class="product-card" :class="{ 'sold-card': product.status === 'SOLD' }">
-            <div class="product-image-container">
-              <img 
-                :src="product.images?.[0] || '/placeholder-product.jpg'" 
-                class="product-image"
-                :alt="product.title"
-              />
-              <div v-if="product.status === 'SOLD'" class="sold-overlay">
-                <span class="sold-text">已售出</span>
-              </div>
-              <div class="product-status" :class="product.status.toLowerCase()">
-                {{ getStatusText(product.status) }}
-              </div>
-            </div>
-            
-            <div class="product-info">
-              <h4 class="product-title">{{ product.title }}</h4>
-              <p class="product-price">¥{{ product.price }}</p>
-              <p class="product-views">浏览量: {{ product.views || 0 }}</p>
-            </div>
-            
-            <div class="product-actions">
-              <el-button 
-                size="small" 
-                @click="openEdit(product)" 
-                :disabled="product.status === 'SOLD'"
-                :icon="Edit">
-                编辑
-              </el-button>
-              <el-button 
-                size="small" 
-                type="danger" 
-                @click="del(product)" 
-                :disabled="product.status === 'SOLD'"
-                :icon="Delete">
-                删除
-              </el-button>
-              <el-button 
-                v-if="product.status !== 'SOLD'"
-                size="small" 
-                @click="toggleStatus(product)">
-                <el-icon><component :is="product.status === 'ACTIVE' ? Hide : ViewIcon" /></el-icon>
-                {{ product.status === 'ACTIVE' ? '下架' : '上架' }}
-              </el-button>
-            </div>
-          </el-card>
+          <MyProductCard 
+            :product="product"
+            @edit="openEdit"
+            @delete="del"
+            @toggle-status="toggleStatus"
+          />
         </el-col>
       </el-row>
     </div>
@@ -184,79 +67,12 @@
         class="pagination"/>
     </div>
 
-    <!-- Edit Dialog -->
-    <el-dialog 
-      v-model="show" 
-      title="编辑商品" 
-      width="700px"
-      class="edit-dialog">
-      <el-form :model="edit" label-position="top" class="edit-form">
-        <el-row :gutter="16">
-          <el-col :span="16">
-            <el-form-item label="商品标题">
-              <el-input 
-                v-model="edit.title" 
-                placeholder="请输入商品标题"
-                size="large"/>
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="价格 (元)">
-              <el-input-number 
-                v-model="edit.price" 
-                :min="0" 
-                :precision="2"
-                size="large"
-                style="width: 100%"/>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        
-        <el-form-item label="商品描述">
-          <el-input 
-            type="textarea" 
-            v-model="edit.description"
-            :rows="4"
-            placeholder="请详细描述您的商品..."
-            maxlength="500"
-            show-word-limit/>
-        </el-form-item>
-        
-        <el-form-item label="商品图片">
-          <div class="image-upload-section">
-            <el-upload 
-              :action="'/api/upload/image'" 
-              :on-success="onImageUpload" 
-              :show-file-list="false" 
-              name="file"
-              class="upload-btn">
-              <el-button type="primary" :icon="Plus">上传图片</el-button>
-            </el-upload>
-            <span class="upload-tip">建议上传清晰的商品图片，最多6张</span>
-          </div>
-          
-          <div v-if="edit.images?.length > 0" class="image-preview-grid">
-            <div v-for="(url, index) in edit.images" :key="index" class="image-preview-item">
-              <img :src="url" class="preview-image" alt="商品图片"/>
-              <div class="image-overlay">
-                <el-button 
-                  type="danger" 
-                  circle 
-                  size="small" 
-                  @click="removeImage(index)"
-                  :icon="Delete"/>
-              </div>
-            </div>
-          </div>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="show=false" size="large">取消</el-button>
-        <el-button type="primary" @click="saveEdit" size="large" :loading="loading">
-          保存修改
-        </el-button>
-      </template>
-    </el-dialog>
+    <MyProductEditDialog 
+      v-model:visible="show"
+      v-model:modelValue="edit"
+      :loading="loading"
+      @save="saveEdit"
+    />
   </div>
 </template>
 
@@ -266,16 +82,16 @@ import {
   Plus, 
   Edit, 
   Delete, 
-  Search, 
-  Refresh, 
-  Goods, 
-  Sell, 
-  Collection, 
-  View,
   Hide,
-  View as ViewIcon
+  View as ViewIcon,
+  Goods
 } from '@element-plus/icons-vue'
 import api from '@/api'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import MyStatsCards from '@/components/profile/MyStatsCards.vue'
+import MyProductsFilter from '@/components/profile/MyProductsFilter.vue'
+import MyProductCard from '@/components/profile/MyProductCard.vue'
+import MyProductEditDialog from '@/components/profile/MyProductEditDialog.vue'
 
 export default {
   name: 'ProfileMyProducts',
@@ -283,14 +99,13 @@ export default {
     Plus,
     Edit,
     Delete,
-    Search,
-    Refresh,
-    Goods,
-    Sell,
-    Collection,
-    View,
     Hide,
-    ViewIcon
+    ViewIcon,
+    Goods,
+    MyStatsCards,
+    MyProductsFilter,
+    MyProductCard,
+    MyProductEditDialog
   },
   setup() {
     const items = ref([])
@@ -345,14 +160,7 @@ export default {
       fetch()
     }
 
-    const getStatusText = (status) => {
-      const statusMap = {
-        'ACTIVE': '在售',
-        'SOLD': '已售',
-        'INACTIVE': '已下架'
-      }
-      return statusMap[status] || status
-    }
+    
 
     const openEdit = (product) => {
       let imgs = []
@@ -371,20 +179,7 @@ export default {
       show.value = true
     }
 
-    const onImageUpload = (res) => {
-      const url = res?.data?.data || res?.data || res
-      if (url && edit.value.images.length < 6) {
-        edit.value.images.push(url)
-        ElMessage.success('图片上传成功')
-      } else if (edit.value.images.length >= 6) {
-        ElMessage.warning('最多只能上传6张图片')
-      }
-    }
-
-    const removeImage = (index) => {
-      edit.value.images.splice(index, 1)
-      ElMessage.success('图片已移除')
-    }
+    
 
     const saveEdit = async () => {
       if (!edit.value.title?.trim()) {
@@ -491,10 +286,7 @@ export default {
       stats,
       fetch,
       onPageChange,
-      getStatusText,
       openEdit,
-      onImageUpload,
-      removeImage,
       saveEdit,
       toggleStatus,
       del,
@@ -539,15 +331,15 @@ export default {
 }
 
 .publish-btn {
-  background: var(--primary-gradient);
+  background: #409EFF;
   border: none;
+  color: #fff;
   font-weight: 600;
-  transition: all 0.3s ease;
 }
 
 .publish-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+  transform: none;
+  box-shadow: none;
 }
 
 .stats-section {
@@ -562,8 +354,8 @@ export default {
 }
 
 .stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  transform: none;
+  box-shadow: var(--shadow-sm);
 }
 
 .stat-content {
@@ -663,8 +455,8 @@ export default {
 }
 
 .product-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-md);
+  transform: none;
+  box-shadow: var(--shadow-sm);
 }
 
 .product-card.sold-card {
@@ -686,7 +478,7 @@ export default {
 }
 
 .product-card:hover .product-image {
-  transform: scale(1.05);
+  transform: none;
 }
 
 .sold-overlay {

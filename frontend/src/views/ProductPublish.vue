@@ -27,7 +27,7 @@
       </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="submit">发布</el-button>
-        <el-button @click="$router.push('/')" style="margin-left:8px">取消发布</el-button>
+        <el-button @click="$router.back()" style="margin-left:8px">取消发布</el-button>
       </el-form-item>
     </el-form>
   </div>

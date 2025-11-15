@@ -10,15 +10,7 @@
         </div>
 
         <!-- Navigation -->
-        <nav class="main-nav">
-          <el-button 
-            type="primary" 
-            @click="$router.push('/publish')"
-            class="publish-btn">
-            <el-icon><Plus /></el-icon>
-            发布商品
-          </el-button>
-        </nav>
+        <nav class="main-nav"></nav>
 
         <!-- User Section -->
         <div class="user-section">
@@ -26,9 +18,10 @@
             <el-dropdown trigger="click" @command="handleCommand">
               <div class="user-avatar-wrapper">
                 <img 
-                  :src="user.avatar || defaultAvatar" 
+                  :src="(user && user.avatar && user.avatar.trim()) ? user.avatar : defaultAvatar" 
                   class="user-avatar"
-                  :alt="user.nickname || user.username" />
+                  :alt="user.nickname || user.username"
+                  @error="onAvatarError" />
                 <span class="username">{{ user.nickname || user.username }}</span>
                 <el-icon class="dropdown-icon"><ArrowDown /></el-icon>
               </div>
@@ -79,6 +72,7 @@
 
 <script>
 import { ArrowDown, Plus, User, SwitchButton } from '@element-plus/icons-vue'
+import api from '@/api'
 
 export default {
   name: 'App',
@@ -91,7 +85,7 @@ export default {
   data() { 
     return { 
       user: null, 
-      defaultAvatar: 'https://via.placeholder.com/28' 
+      defaultAvatar: '/default-avatar.svg' 
     } 
   },
   mounted(){
@@ -107,6 +101,17 @@ export default {
     refreshUser(){
       const u = localStorage.getItem('user')
       this.user = u ? JSON.parse(u) : null
+      const token = localStorage.getItem('token')
+      if (token) {
+        api.get('/user/me').then(res => {
+          const data = res?.data?.data || {}
+          this.user = data
+          try { localStorage.setItem('user', JSON.stringify(data)) } catch(e) {}
+        }).catch(() => {})
+      }
+    },
+    onAvatarError(e){
+      e.target.src = this.defaultAvatar
     },
     onStorage(e){
       if (e.key === 'user' || e.key === 'token') this.refreshUser()

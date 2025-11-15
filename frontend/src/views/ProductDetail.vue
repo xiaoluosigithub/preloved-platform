@@ -1,5 +1,11 @@
 <template>
   <div style="max-width:900px;margin:20px auto">
+    <div class="detail-header">
+      <el-button type="primary" plain size="small" class="back-btn" @click="$router.back()">
+        <el-icon><ArrowLeft /></el-icon>
+        返回
+      </el-button>
+    </div>
     <el-card>
       <h2>{{ product.title }}</h2>
       <div>¥ {{ product.price }}</div>
@@ -9,14 +15,13 @@
       <div v-html="product.description"></div>
 
       <div style="margin-top:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        <el-button @click="$router.push('/')">返回首页</el-button>
-        <el-button type="text" @click="toggleLike">👍 {{ likeCount }} {{ isLiked ? '(已点赞)' : '' }}</el-button>
-        <el-button type="text" @click="toggleFavorite">⭐ {{ favorCount }} {{ isFavorited ? '(已收藏)' : '' }}</el-button>
+        <el-button link @click="toggleLike">👍 {{ likeCount }} {{ isLiked ? '(已点赞)' : '' }}</el-button>
+        <el-button link @click="toggleFavorite">⭐ {{ favorCount }} {{ isFavorited ? '(已收藏)' : '' }}</el-button>
         <el-button type="primary" @click="goBuy" style="margin-left:8px" :disabled="product.status!=='AVAILABLE'">立即购买</el-button>
       </div>
 
       <div style="margin-top:20px">
-        <el-input type="textarea" v-model="commentText" placeholder="写评论..." rows="3"></el-input>
+        <el-input type="textarea" v-model="commentText" placeholder="写评论..." :rows="3"></el-input>
         <el-button type="primary" @click="postComment" style="margin-top:8px">发表评论</el-button>
       </div>
 
@@ -39,9 +44,11 @@
 <script>
 import api from '@/api'
 import { ElMessageBox } from 'element-plus'
+import { ArrowLeft } from '@element-plus/icons-vue'
 export default {
   props: ['id'],
-  data(){ return { product:{}, images:[], comments:[], commentText:'', isFavorited:false, favorCount:0, isLiked:false, likeCount:0, commentsPage:1, commentsSize:10, commentsTotal:0, defaultAvatar:'https://via.placeholder.com/36' } },
+  data(){ return { product:{}, images:[], comments:[], commentText:'', isFavorited:false, favorCount:0, isLiked:false, likeCount:0, commentsPage:1, commentsSize:10, commentsTotal:0, defaultAvatar:'/default-avatar.svg' } },
+  components: { ArrowLeft },
   async mounted(){
     const pid = this.$route.params.id || this.id
     const res = await api.get(`/products/${pid}`)
@@ -111,3 +118,8 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.detail-header { display: flex; justify-content: flex-start; margin-bottom: 8px; }
+.back-btn { display: inline-flex; align-items: center; gap: 6px; }
+</style>
