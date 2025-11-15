@@ -2,8 +2,9 @@
   <div>
     <div style="padding:8px 16px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center">
       <div style="cursor:pointer" @click="$router.push('/')">Secondhand</div>
-      <div>
-        <span v-if="user && user.username">已登录：{{ user.nickname || user.username }}</span>
+      <div style="display:flex;align-items:center;gap:8px">
+        <img v-if="user && user.username" :src="user.avatar || defaultAvatar" style="width:28px;height:28px;border-radius:50%" />
+        <span v-if="user && user.username">{{ user.nickname || '未设置昵称' }}</span>
         <span v-else>未登录</span>
         <el-button type="text" v-if="user && user.username" @click="$router.push('/profile')">个人主页</el-button>
         <el-button type="text" v-if="user && user.username" @click="logout">退出</el-button>
@@ -16,7 +17,7 @@
 
 <script>
 export default {
-  data(){ return { user: null } },
+  data(){ return { user: null, defaultAvatar: 'https://via.placeholder.com/28' } },
   mounted(){
     this.refreshUser()
     window.addEventListener('storage', this.onStorage)

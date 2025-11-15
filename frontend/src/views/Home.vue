@@ -54,8 +54,10 @@ export default {
     },
     async fetchList(){
       try {
-        const params = { page:this.page, size:this.size, keyword:this.keyword }
+        const params = { page:this.page, size:this.size }
         if (this.selectedCategory !== '' && this.selectedCategory != null) params.categoryId = this.selectedCategory
+        const kw = (this.keyword || '').trim()
+        if (kw) params.keyword = kw
         const res = await api.get('/products', { params })
         const d = res.data.data || {}
         this.items = d.items || []

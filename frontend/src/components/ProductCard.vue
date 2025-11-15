@@ -1,5 +1,5 @@
 <template>
-  <el-card @click="goDetail" style="cursor:pointer">
+  <el-card @click="goDetail" style="cursor:pointer; position:relative">
     <div style="width:100%;height:160px;display:flex;align-items:center;justify-content:center;background:#f6f7f9">
       <img v-if="mainImage" :src="mainImage" style="width:100%;height:160px;object-fit:cover" />
       <div v-else style="color:#999">暂无图片</div>
@@ -8,6 +8,7 @@
       <h4>{{ product.title }}</h4>
       <div>¥ {{ product.price }}</div>
     </div>
+    <div v-if="product.status==='SOLD'" style="position:absolute;top:8px;left:8px;background:#f56c6c;color:#fff;padding:2px 6px;border-radius:4px;font-size:12px">已售出</div>
   </el-card>
 </template>
 <script>

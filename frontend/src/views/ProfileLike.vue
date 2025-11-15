@@ -30,7 +30,7 @@ export default {
       this.total = d.total || 0
     },
     onPageChange(p){ this.page=p; this.fetch() },
-    toProduct(p){ return { id: p.productId, title: p.title, price: p.price, images: p.images } },
+    toProduct(p){ return { id: p.productId, title: p.title, price: p.price, images: p.images, status: p.status } },
     async toggleLike(p){
       try { const res = await api.post(`/products/${p.productId}/like`); const d = res.data.data || {}; if (!d.liked) { this.items = this.items.filter(x=>x.productId!==p.productId); this.$message.success('已取消点赞') } }
       catch(e){ this.$message.error(e.response?.data?.msg || '操作失败') }

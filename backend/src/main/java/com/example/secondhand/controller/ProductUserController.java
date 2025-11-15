@@ -58,6 +58,8 @@ public class ProductUserController {
     Product origin = productService.findById(id);
     if (origin == null) return Result.fail("not found");
     if (!uid.equals(origin.getSellerId())) return Result.fail("forbidden");
+    if ("PENDING".equals(origin.getStatus())) return Result.fail("cannot delete pending product");
+    if ("SOLD".equals(origin.getStatus())) return Result.fail("cannot delete sold product");
     favoriteMapper.deleteByProduct(id);
     likeMapper.deleteByProduct(id);
     commentMapper.deleteByProduct(id);

@@ -35,7 +35,14 @@ export default {
   methods:{
     onAvatarUpload(res){ const url = res?.data?.data || res?.data || res; if (url) this.form.avatar = url },
     async save(){
-      try { await api.post('/user/update', this.form); this.$message.success('保存成功') } catch(e){ this.$message.error(e.response?.data?.msg || '保存失败') }
+      try {
+        await api.post('/user/update', this.form)
+        const res = await api.get('/user/me')
+        const u = res.data.data || {}
+        localStorage.setItem('user', JSON.stringify(u))
+        window.dispatchEvent(new Event('auth-changed'))
+        this.$message.success('保存成功')
+      } catch(e){ this.$message.error(e.response?.data?.msg || '保存失败') }
     }
   }
 }

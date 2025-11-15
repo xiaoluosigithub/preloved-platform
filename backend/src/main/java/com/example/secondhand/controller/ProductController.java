@@ -80,6 +80,10 @@ public class ProductController {
     Object uid = req.getAttribute("userId");
     if (uid == null) return Result.fail("unauthenticated");
     p.setId(id);
+    Product origin = productService.findById(id);
+    if (origin == null) return Result.fail("not found");
+    if (!((Long)uid).equals(origin.getSellerId())) return Result.fail("forbidden");
+    if ("SOLD".equals(origin.getStatus())) return Result.fail("cannot update sold product");
     productService.update(p);
     return Result.ok("updated");
   }
@@ -91,6 +95,8 @@ public class ProductController {
     Product origin = productService.findById(id);
     if (origin == null) return Result.fail("not found");
     if (!((Long)uid).equals(origin.getSellerId())) return Result.fail("forbidden");
+    if ("PENDING".equals(origin.getStatus())) return Result.fail("cannot delete pending product");
+    if ("SOLD".equals(origin.getStatus())) return Result.fail("cannot delete sold product");
     favoriteMapper.deleteByProduct(id);
     likeMapper.deleteByProduct(id);
     commentMapper.deleteByProduct(id);

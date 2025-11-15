@@ -11,7 +11,7 @@ public interface ProductMapper {
   @Options(useGeneratedKeys=true,keyProperty="id")
   int insert(Product p);
 
-  @Update("<script>UPDATE product SET title=#{title},description=#{description},price=#{price},category_id=#{categoryId},images=#{images},status=#{status} WHERE id=#{id}</script>")
+  @Update("<script>UPDATE product SET title=#{title},description=#{description},price=#{price},category_id=#{categoryId},images=#{images} WHERE id=#{id}</script>")
   int update(Product p);
 
   @Delete("DELETE FROM product WHERE id=#{id}")
@@ -20,11 +20,17 @@ public interface ProductMapper {
   @Select("SELECT id,title,description,price,seller_id as sellerId,category_id as categoryId,images,status,created_at as createdAt,updated_at as updatedAt FROM product WHERE id=#{id}")
   Product findById(Long id);
 
-  @Select("<script>SELECT id,title,description,price,seller_id as sellerId,category_id as categoryId,images,status,created_at as createdAt,updated_at as updatedAt FROM product <where><if test='categoryId != null'> AND category_id = #{categoryId} </if><if test='keyword != null and keyword.trim() != \"\"'> AND (title LIKE CONCAT('%',#{keyword},'%') OR description LIKE CONCAT('%',#{keyword},'%')) </if></where> ORDER BY created_at DESC LIMIT #{offset}, #{limit}</script>")
+  @Select("<script>SELECT id,title,description,price,seller_id as sellerId,category_id as categoryId,images,status,created_at as createdAt,updated_at as updatedAt FROM product WHERE status = 'AVAILABLE' <if test='categoryId != null'> AND category_id = #{categoryId} </if><if test='keyword != null and keyword != \"\"'> AND (title LIKE CONCAT('%',#{keyword},'%') OR description LIKE CONCAT('%',#{keyword},'%')) </if> ORDER BY created_at DESC LIMIT #{offset}, #{limit}</script>")
   List<Product> findByPage(@Param("categoryId") Integer categoryId, @Param("keyword") String keyword, @Param("offset") int offset, @Param("limit") int limit);
 
-  @Select("<script>SELECT COUNT(1) FROM product <where><if test='categoryId != null'> AND category_id = #{categoryId} </if><if test='keyword != null and keyword.trim() != \"\"'> AND (title LIKE CONCAT('%',#{keyword},'%') OR description LIKE CONCAT('%',#{keyword},'%')) </if></where></script>")
+  @Select("<script>SELECT COUNT(1) FROM product WHERE status = 'AVAILABLE' <if test='categoryId != null'> AND category_id = #{categoryId} </if><if test='keyword != null and keyword != \"\"'> AND (title LIKE CONCAT('%',#{keyword},'%') OR description LIKE CONCAT('%',#{keyword},'%')) </if></script>")
   int countByFilter(@Param("categoryId") Integer categoryId, @Param("keyword") String keyword);
+
+  @Update("UPDATE product SET status=#{status} WHERE id=#{id}")
+  int updateStatus(@Param("id") Long id, @Param("status") String status);
+
+  @Update("UPDATE product SET status=#{newStatus} WHERE id=#{id} AND status=#{expectStatus}")
+  int updateStatusIfCurrent(@Param("id") Long id, @Param("newStatus") String newStatus, @Param("expectStatus") String expectStatus);
 
   @Select("SELECT id,title,description,price,seller_id as sellerId,category_id as categoryId,images,status,created_at as createdAt,updated_at as updatedAt FROM product WHERE seller_id=#{sellerId} ORDER BY created_at DESC LIMIT #{offset}, #{limit}")
   List<Product> findBySeller(@Param("sellerId") Long sellerId, @Param("offset") int offset, @Param("limit") int limit);

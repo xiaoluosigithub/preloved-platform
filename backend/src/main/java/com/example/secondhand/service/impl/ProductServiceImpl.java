@@ -19,7 +19,11 @@ public class ProductServiceImpl implements ProductService {
   public Product findById(Long id) { return productMapper.findById(id); }
 
   @Override
-  public int create(Product p) { return productMapper.insert(p); }
+  public int create(Product p) {
+    String s = p.getStatus();
+    if (s == null || s.isEmpty()) p.setStatus("AVAILABLE");
+    return productMapper.insert(p);
+  }
 
   @Override
   public int update(Product p) { return productMapper.update(p); }

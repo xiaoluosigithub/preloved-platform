@@ -11,6 +11,7 @@
       <div style="margin-top:12px">
         <el-button type="text" @click="toggleLike">👍 {{ likeCount }} {{ isLiked ? '(已点赞)' : '' }}</el-button>
         <el-button type="text" @click="toggleFavorite">⭐ {{ favorCount }} {{ isFavorited ? '(已收藏)' : '' }}</el-button>
+        <el-button type="primary" @click="goBuy" style="margin-left:8px" :disabled="product.status!=='AVAILABLE'">立即购买</el-button>
       </div>
 
       <div style="margin-top:20px">
@@ -33,6 +34,7 @@
 
 <script>
 import api from '@/api'
+import { ElMessageBox } from 'element-plus'
 export default {
   props: ['id'],
   data(){ return { product:{}, images:[], comments:[], commentText:'', isFavorited:false, favorCount:0, isLiked:false, likeCount:0, commentsPage:1, commentsSize:10, commentsTotal:0 } },
@@ -64,6 +66,8 @@ export default {
     },
     onCommentsPageChange(p){ this.commentsPage = p; this.fetchComments() },
     async toggleFavorite(){
+      const token = localStorage.getItem('token')
+      if (!token) { this.$message.warning('请先登录'); return }
       try {
         const res = await api.post(`/products/${this.product.id}/favorite`)
         const d = res.data.data || {}
@@ -72,6 +76,8 @@ export default {
       } catch(e){ this.$message.error(e.response?.data?.msg || '操作失败') }
     },
     async toggleLike(){
+      const token = localStorage.getItem('token')
+      if (!token) { this.$message.warning('请先登录'); return }
       try {
         const res = await api.post(`/products/${this.product.id}/like`)
         const d = res.data.data || {}
@@ -80,6 +86,8 @@ export default {
       } catch(e){ this.$message.error(e.response?.data?.msg || '操作失败') }
     },
     async postComment(){
+      const token = localStorage.getItem('token')
+      if (!token) { this.$message.warning('请先登录'); return }
       if(!this.commentText || !this.commentText.trim()) { this.$message.warning('请输入评论内容'); return }
       try {
         await api.post(`/products/${this.product.id}/comments`, { content: this.commentText })
@@ -87,6 +95,14 @@ export default {
         this.$message.success('评论成功')
         await this.fetchComments()
       } catch(e){ this.$message.error(e.response?.data?.msg || '评论失败') }
+    },
+    goBuy(){
+      const u = localStorage.getItem('user')
+      const me = u ? JSON.parse(u) : null
+      const buyerId = Number(me?.id)
+      const sellerId = Number(this.product?.sellerId)
+      if (!Number.isNaN(buyerId) && !Number.isNaN(sellerId) && buyerId === sellerId) { ElMessageBox.alert('不能购买自己发布的商品', '提示'); return }
+      this.$router.push('/order/buy/'+this.product.id)
     }
   }
 }

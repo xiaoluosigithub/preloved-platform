@@ -10,6 +10,9 @@ import ProfileInfo from '@/views/ProfileInfo.vue'
 import MyProducts from '@/views/ProfileMyProducts.vue'
 import FavoriteList from '@/views/ProfileFavorite.vue'
 import LikeList from '@/views/ProfileLike.vue'
+import OrderBuy from '@/views/OrderBuy.vue'
+import OrderListBuy from '@/views/OrderListBuy.vue'
+import OrderListSell from '@/views/OrderListSell.vue'
 
 const routes = [
   { path: '/', component: Home, meta: { requiresAuth: false } },
@@ -26,9 +29,14 @@ const routes = [
       { path: '', component: ProfileInfo, meta: { requiresAuth: true } },
       { path: 'my-products', component: MyProducts, meta: { requiresAuth: true } },
       { path: 'favorite', component: FavoriteList, meta: { requiresAuth: true } },
-      { path: 'like', component: LikeList, meta: { requiresAuth: true } }
+      { path: 'like', component: LikeList, meta: { requiresAuth: true } },
+      { path: 'order-buy', component: OrderListBuy, meta: { requiresAuth: true } },
+      { path: 'order-sell', component: OrderListSell, meta: { requiresAuth: true } }
     ]
   }
+  ,{ path: '/order/buy/:productId', component: OrderBuy, meta: { requiresAuth: true } }
+  ,{ path: '/order/list/buy', redirect: '/profile/order-buy' }
+  ,{ path: '/order/list/sell', redirect: '/profile/order-sell' }
 ]
 
 const router = createRouter({

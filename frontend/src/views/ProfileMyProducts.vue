@@ -4,9 +4,10 @@
     <el-row :gutter="20">
       <el-col v-for="p in items" :key="p.id" :span="6">
         <product-card :product="p" />
-        <div style="margin-top:6px">
-          <el-button size="small" @click="openEdit(p)">编辑</el-button>
-          <el-button size="small" type="danger" @click="del(p)">删除</el-button>
+        <div style="margin-top:6px; display:flex; align-items:center; gap:8px">
+          <el-button size="small" @click="openEdit(p)" :disabled="p.status==='SOLD'">编辑</el-button>
+          <el-button size="small" type="danger" @click="del(p)" :disabled="p.status==='SOLD'">删除</el-button>
+          <span v-if="p.status==='SOLD'" style="color:#f56c6c">该商品已售出</span>
         </div>
       </el-col>
     </el-row>
