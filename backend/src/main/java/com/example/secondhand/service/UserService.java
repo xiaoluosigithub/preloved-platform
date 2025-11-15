@@ -6,4 +6,5 @@ public interface UserService {
   int createUser(User user);
   User findByUsername(String username);
   User findById(Long id);
+  int updateProfile(User user);
 }

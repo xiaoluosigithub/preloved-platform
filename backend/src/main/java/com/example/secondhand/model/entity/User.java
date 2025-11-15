@@ -8,6 +8,8 @@ public class User {
   private String password;
   private String nickname;
   private String role;
+  private String avatar;
+  private String signature;
   private Timestamp createdAt;
 
   public Long getId() { return id; }
@@ -20,6 +22,10 @@ public class User {
   public void setNickname(String n) { this.nickname = n; }
   public String getRole() { return role; }
   public void setRole(String r) { this.role = r; }
+  public String getAvatar() { return avatar; }
+  public void setAvatar(String a) { this.avatar = a; }
+  public String getSignature() { return signature; }
+  public void setSignature(String s) { this.signature = s; }
   public Timestamp getCreatedAt() { return createdAt; }
   public void setCreatedAt(Timestamp t) { this.createdAt = t; }
 }

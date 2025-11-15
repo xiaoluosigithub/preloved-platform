@@ -40,4 +40,18 @@ public class ProductServiceImpl implements ProductService {
     ret.put("size", size);
     return ret;
   }
+
+  @Override
+  public Map<String,Object> pageListBySeller(Long sellerId, int page, int size) {
+    if(page < 1) page = 1;
+    int offset = (page - 1) * size;
+    List<Product> list = productMapper.findBySeller(sellerId, offset, size);
+    int total = productMapper.countBySeller(sellerId);
+    Map<String,Object> ret = new HashMap<>();
+    ret.put("items", list);
+    ret.put("total", total);
+    ret.put("page", page);
+    ret.put("size", size);
+    return ret;
+  }
 }

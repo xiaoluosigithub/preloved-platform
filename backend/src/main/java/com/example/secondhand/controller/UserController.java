@@ -24,4 +24,18 @@ public class UserController {
     u.setPassword(null);
     return Result.ok(u);
   }
+
+  @PostMapping("/update")
+  public Result<?> update(HttpServletRequest req, @RequestBody User body) {
+    Object o = req.getAttribute("userId");
+    if (o == null) return Result.fail("unauthenticated");
+    Long userId = (Long) o;
+    User u = new User();
+    u.setId(userId);
+    u.setNickname(body.getNickname());
+    u.setAvatar(body.getAvatar());
+    u.setSignature(body.getSignature());
+    userService.updateProfile(u);
+    return Result.ok("updated");
+  }
 }

@@ -1,6 +1,9 @@
 <template>
   <el-card @click="goDetail" style="cursor:pointer">
-    <img v-if="mainImage" :src="mainImage" style="width:100%;height:160px;object-fit:cover" />
+    <div style="width:100%;height:160px;display:flex;align-items:center;justify-content:center;background:#f6f7f9">
+      <img v-if="mainImage" :src="mainImage" style="width:100%;height:160px;object-fit:cover" />
+      <div v-else style="color:#999">暂无图片</div>
+    </div>
     <div style="padding:8px 0">
       <h4>{{ product.title }}</h4>
       <div>¥ {{ product.price }}</div>

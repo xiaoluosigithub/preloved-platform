@@ -5,6 +5,11 @@ import Register from '@/views/Register.vue'
 import ProductPublish from '@/views/ProductPublish.vue'
 import ProductDetail from '@/views/ProductDetail.vue'
 import Blank from '@/views/Blank.vue'
+import Profile from '@/views/Profile.vue'
+import ProfileInfo from '@/views/ProfileInfo.vue'
+import MyProducts from '@/views/ProfileMyProducts.vue'
+import FavoriteList from '@/views/ProfileFavorite.vue'
+import LikeList from '@/views/ProfileLike.vue'
 
 const routes = [
   { path: '/', component: Home, meta: { requiresAuth: false } },
@@ -13,6 +18,17 @@ const routes = [
   { path: '/publish', component: ProductPublish, meta: { requiresAuth: true } },
   { path: '/product/:id', component: ProductDetail, props: true }
   ,{ path: '/hybridaction/:rest(.*)', component: Blank }
+  ,{
+    path: '/profile',
+    component: Profile,
+    meta: { requiresAuth: true },
+    children: [
+      { path: '', component: ProfileInfo, meta: { requiresAuth: true } },
+      { path: 'my-products', component: MyProducts, meta: { requiresAuth: true } },
+      { path: 'favorite', component: FavoriteList, meta: { requiresAuth: true } },
+      { path: 'like', component: LikeList, meta: { requiresAuth: true } }
+    ]
+  }
 ]
 
 const router = createRouter({

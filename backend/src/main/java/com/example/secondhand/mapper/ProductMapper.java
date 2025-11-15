@@ -25,4 +25,10 @@ public interface ProductMapper {
 
   @Select("<script>SELECT COUNT(1) FROM product <where><if test='categoryId != null'> AND category_id = #{categoryId} </if><if test='keyword != null and keyword.trim() != \"\"'> AND (title LIKE CONCAT('%',#{keyword},'%') OR description LIKE CONCAT('%',#{keyword},'%')) </if></where></script>")
   int countByFilter(@Param("categoryId") Integer categoryId, @Param("keyword") String keyword);
+
+  @Select("SELECT id,title,description,price,seller_id as sellerId,category_id as categoryId,images,status,created_at as createdAt,updated_at as updatedAt FROM product WHERE seller_id=#{sellerId} ORDER BY created_at DESC LIMIT #{offset}, #{limit}")
+  List<Product> findBySeller(@Param("sellerId") Long sellerId, @Param("offset") int offset, @Param("limit") int limit);
+
+  @Select("SELECT COUNT(1) FROM product WHERE seller_id=#{sellerId}")
+  int countBySeller(@Param("sellerId") Long sellerId);
 }

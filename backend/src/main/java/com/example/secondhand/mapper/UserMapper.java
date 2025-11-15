@@ -9,9 +9,12 @@ public interface UserMapper {
   @Options(useGeneratedKeys = true, keyProperty = "id")
   int insert(User user);
 
-  @Select("SELECT id,username,password,nickname,role,created_at as createdAt FROM user WHERE username=#{username}")
+  @Select("SELECT id,username,password,nickname,role,avatar,signature,created_at as createdAt FROM user WHERE username=#{username}")
   User findByUsername(String username);
 
-  @Select("SELECT id,username,password,nickname,role,created_at as createdAt FROM user WHERE id=#{id}")
+  @Select("SELECT id,username,password,nickname,role,avatar,signature,created_at as createdAt FROM user WHERE id=#{id}")
   User findById(Long id);
+
+  @Update("UPDATE user SET nickname=#{nickname}, avatar=#{avatar}, signature=#{signature} WHERE id=#{id}")
+  int updateProfile(User user);
 }

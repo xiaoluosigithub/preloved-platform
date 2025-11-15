@@ -10,4 +10,5 @@ public interface ProductService {
   int update(Product p);
   int delete(Long id);
   Map<String,Object> pageList(Integer categoryId, String keyword, int page, int size);
+  Map<String,Object> pageListBySeller(Long sellerId, int page, int size);
 }

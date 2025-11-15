@@ -1,10 +1,11 @@
 <template>
   <div>
     <div style="padding:8px 16px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center">
-      <div>Secondhand</div>
+      <div style="cursor:pointer" @click="$router.push('/')">Secondhand</div>
       <div>
         <span v-if="user && user.username">已登录：{{ user.nickname || user.username }}</span>
         <span v-else>未登录</span>
+        <el-button type="text" v-if="user && user.username" @click="$router.push('/profile')">个人主页</el-button>
         <el-button type="text" v-if="user && user.username" @click="logout">退出</el-button>
         <el-button type="text" v-else @click="$router.push('/login')">登录</el-button>
       </div>
@@ -19,9 +20,11 @@ export default {
   mounted(){
     this.refreshUser()
     window.addEventListener('storage', this.onStorage)
+    window.addEventListener('auth-changed', this.refreshUser)
   },
   beforeUnmount(){
     window.removeEventListener('storage', this.onStorage)
+    window.removeEventListener('auth-changed', this.refreshUser)
   },
   methods:{
     refreshUser(){

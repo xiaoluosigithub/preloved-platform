@@ -33,6 +33,7 @@ export default {
         const token = data.token;
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(data.user || {}));
+        window.dispatchEvent(new Event('auth-changed'));
         this.$router.push('/');
       } catch (err) {
         const msg = err.response?.data?.msg || err.message;
