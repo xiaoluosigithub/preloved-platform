@@ -37,4 +37,19 @@ public interface ProductMapper {
 
   @Select("SELECT COUNT(1) FROM product WHERE seller_id=#{sellerId}")
   int countBySeller(@Param("sellerId") Long sellerId);
+
+  @Select("SELECT id,title,description,price,seller_id as sellerId,category_id as categoryId,images,status,created_at as createdAt,updated_at as updatedAt FROM product WHERE status = #{status} ORDER BY created_at DESC LIMIT #{offset}, #{limit}")
+  List<Product> findByStatus(@Param("status") String status, @Param("offset") int offset, @Param("limit") int limit);
+
+  @Select("SELECT COUNT(1) FROM product WHERE status = #{status}")
+  int countByStatus(@Param("status") String status);
+
+  @Select("SELECT COUNT(1) FROM product WHERE category_id = #{categoryId}")
+  int countByCategory(@Param("categoryId") Integer categoryId);
+
+  @Select("<script>SELECT id,title,description,price,seller_id as sellerId,category_id as categoryId,images,status,created_at as createdAt,updated_at as updatedAt FROM product <where> <if test='status != null'> status = #{status} </if> <if test='keyword != null and keyword.length() > 0'> AND (title LIKE CONCAT('%',#{keyword},'%') OR description LIKE CONCAT('%',#{keyword},'%')) </if> </where> ORDER BY created_at DESC LIMIT #{offset}, #{limit}</script>")
+  List<Product> findAllByPage(@Param("status") String status, @Param("keyword") String keyword, @Param("offset") int offset, @Param("limit") int limit);
+
+  @Select("<script>SELECT COUNT(1) FROM product <where> <if test='status != null'> status = #{status} </if> <if test='keyword != null and keyword.length() > 0'> AND (title LIKE CONCAT('%',#{keyword},'%') OR description LIKE CONCAT('%',#{keyword},'%')) </if> </where></script>")
+  int countAllByFilter(@Param("status") String status, @Param("keyword") String keyword);
 }

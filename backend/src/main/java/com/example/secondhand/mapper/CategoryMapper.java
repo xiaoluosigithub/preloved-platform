@@ -15,4 +15,10 @@ public interface CategoryMapper {
 
   @Select("SELECT id,name,created_at as createdAt FROM category WHERE id=#{id}")
   Category findById(Integer id);
+
+  @Select("SELECT id,name,created_at as createdAt FROM category WHERE name=#{name}")
+  Category findByName(String name);
+
+  @Delete("DELETE FROM category WHERE id=#{id}")
+  int delete(Integer id);
 }

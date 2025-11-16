@@ -19,7 +19,7 @@ public class Result<T> {
     return new Result<>(0, "ok", null);
   }
 
-  public static Result<String> fail(String msg) {
+  public static <T> Result<T> fail(String msg) {
     return new Result<>(-1, msg, null);
   }
 

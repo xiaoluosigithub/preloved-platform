@@ -24,10 +24,15 @@
 
         <!-- Navigation Menu -->
         <el-card class="nav-card">
-          <el-button type="primary" class="home-btn" @click="$router.push('/')">
-            <el-icon><House /></el-icon>
-            返回首页
-          </el-button>
+          <div class="admin-actions">
+            <el-button v-if="isAdmin" type="warning" class="nav-btn" @click="$router.push('/admin/login')">
+              进入管理员界面
+            </el-button>
+            <el-button type="primary" class="nav-btn" @click="$router.push('/')">
+              <el-icon class="nav-icon"><House /></el-icon>
+              返回首页
+            </el-button>
+          </div>
           <el-menu :default-active="active" class="profile-menu" @select="handleMenuSelect">
             <el-menu-item index="info" @click="go('/profile')">
               <el-icon><User /></el-icon>
@@ -107,11 +112,13 @@ export default {
     const router = useRouter()
     const active = ref('info')
     const user = ref({})
+    const isAdmin = ref(false)
 
     const load = async () => {
       try {
         const res = await api.get('/user/me')
         user.value = res.data.data || {}
+        isAdmin.value = String(user.value.role || '').toUpperCase() === 'ADMIN'
       } catch (err) {
         console.error('Failed to load user info:', err)
       }
@@ -153,6 +160,7 @@ export default {
     return {
       active,
       user,
+      isAdmin,
       go,
       handleMenuSelect,
       logout
@@ -233,12 +241,22 @@ export default {
   line-height: 1.4;
 }
 
-.nav-card {
-  border-radius: 12px;
-  box-shadow: var(--shadow-sm);
-  border: none;
-  margin-bottom: 16px;
-}
+  .nav-card {
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm);
+    border: none;
+    margin-bottom: 16px;
+  }
+
+  .nav-card :deep(.el-card__body) { padding: 12px; }
+
+  .admin-actions { display: flex; flex-direction: column; gap: 12px; }
+
+  .nav-btn { display: block; width: 100%; height: 48px; border-radius: 8px; font-weight: 600; margin: 0; }
+  .nav-icon { margin-right: 8px; }
+
+  .profile-menu { margin-top: 8px; }
+  .admin-actions :deep(.el-button + .el-button) { margin-left: 0 !important; }
 
 .profile-menu {
   border: none;

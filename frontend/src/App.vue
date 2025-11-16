@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <!-- Modern Header -->
-    <header class="app-header">
+    <header v-if="!isAdminRoute" class="app-header">
       <div class="header-content">
         <!-- Logo -->
         <div class="logo-section" @click="$router.push('/')">
@@ -89,6 +89,9 @@ export default {
     avatarSrc() {
       const a = this.user?.avatar
       return (a && String(a).trim().length > 0) ? a : this.defaultAvatar
+    }
+    ,isAdminRoute() {
+      return this.$route.path.startsWith('/admin')
     }
   },
   mounted(){
@@ -179,14 +182,15 @@ export default {
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
-.logo-text {
-  font-size: 1.5rem;
-  font-weight: 700;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  margin: 0;
-}
+  .logo-text {
+    font-size: 1.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 0;
+  }
 
 .main-nav {
   flex: 1;

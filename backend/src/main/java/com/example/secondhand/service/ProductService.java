@@ -1,7 +1,6 @@
 package com.example.secondhand.service;
 
 import com.example.secondhand.model.entity.Product;
-import java.util.List;
 import java.util.Map;
 
 public interface ProductService {

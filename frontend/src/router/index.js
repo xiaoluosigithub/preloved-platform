@@ -13,6 +13,12 @@ import LikeList from '@/views/ProfileLike.vue'
 import OrderBuy from '@/views/OrderBuy.vue'
 import OrderListBuy from '@/views/OrderListBuy.vue'
 import OrderListSell from '@/views/OrderListSell.vue'
+import AdminLogin from '@/admin/AdminLogin.vue'
+import AdminLayout from '@/admin/AdminLayout.vue'
+import AdminProducts from '@/admin/AdminProducts.vue'
+import AdminUsers from '@/admin/AdminUsers.vue'
+import AdminCategories from '@/admin/AdminCategories.vue'
+import AdminStats from '@/admin/AdminStats.vue'
 
 const routes = [
   { path: '/', component: Home, meta: { requiresAuth: false } },
@@ -37,6 +43,14 @@ const routes = [
   ,{ path: '/order/buy/:productId', component: OrderBuy, meta: { requiresAuth: true } }
   ,{ path: '/order/list/buy', redirect: '/profile/order-buy' }
   ,{ path: '/order/list/sell', redirect: '/profile/order-sell' }
+  ,{ path: '/admin/login', component: AdminLogin }
+  ,{ path: '/admin', component: AdminLayout, children: [
+    { path: '', redirect: '/admin/products' },
+    { path: 'products', component: AdminProducts },
+    { path: 'users', component: AdminUsers },
+    { path: 'categories', component: AdminCategories },
+    { path: 'stats', component: AdminStats }
+  ]}
 ]
 
 const router = createRouter({
@@ -46,8 +60,13 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token')
-  if (to.meta.requiresAuth && !token) next('/login')
-  else next()
+  if (to.meta.requiresAuth && !token) return next('/login')
+  if (to.path.startsWith('/admin') && to.path !== '/admin/login') {
+    const u = localStorage.getItem('user')
+    const user = u ? JSON.parse(u) : null
+    if (!token || !user || user.role !== 'ADMIN') return next('/admin/login')
+  }
+  next()
 })
 
 export default router
