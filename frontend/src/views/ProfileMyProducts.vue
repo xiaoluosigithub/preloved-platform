@@ -27,7 +27,7 @@
                 <el-icon><Goods /></el-icon>
               </div>
               <div class="stat-info">
-                <div class="stat-number">{{ stats.active }}</div>
+                <div class="stat-number">{{ stats.available }}</div>
                 <div class="stat-label">在售商品</div>
               </div>
             </div>
@@ -49,24 +49,11 @@
         <el-col :span="6">
           <el-card class="stat-card">
             <div class="stat-content">
-              <div class="stat-icon total">
-                <el-icon><Collection /></el-icon>
-              </div>
-              <div class="stat-info">
-                <div class="stat-number">{{ stats.total }}</div>
-                <div class="stat-label">总发布数</div>
-              </div>
-            </div>
-          </el-card>
-        </el-col>
-        <el-col :span="6">
-          <el-card class="stat-card">
-            <div class="stat-content">
               <div class="stat-icon views">
                 <el-icon><View /></el-icon>
               </div>
               <div class="stat-info">
-                <div class="stat-number">{{ stats.views }}</div>
+                <div class="stat-number">-</div>
                 <div class="stat-label">总浏览量</div>
               </div>
             </div>
@@ -90,9 +77,8 @@
         <el-col :span="6">
           <el-select v-model="statusFilter" placeholder="状态筛选" clearable @change="handleFilter">
             <el-option label="全部" value="" />
-            <el-option label="在售" value="ACTIVE" />
-            <el-option label="已售" value="SOLD" />
-            <el-option label="已下架" value="INACTIVE" />
+            <el-option label="未售出" value="AVAILABLE" />
+            <el-option label="已售出" value="SOLD" />
           </el-select>
         </el-col>
         <el-col :span="6">
@@ -111,7 +97,7 @@
 
     <!-- Products Grid -->
     <div class="products-section">
-      <div v-if="items.length === 0" class="empty-state">
+      <div v-if="displayItems.length === 0" class="empty-state">
         <el-icon size="64"><Goods /></el-icon>
         <h3>暂无发布的商品</h3>
         <p>您还没有发布任何商品，快去发布您的第一个商品吧！</p>
@@ -121,51 +107,50 @@
       </div>
       
       <el-row v-else :gutter="20" class="products-grid">
-        <el-col v-for="product in items" :key="product.id" :span="6" :xs="24" :sm="12" :md="8" :lg="6">
-          <el-card class="product-card" :class="{ 'sold-card': product.status === 'SOLD' }">
+        <el-col v-for="product in displayItems" :key="product.id" :span="6" :xs="24" :sm="12" :md="8" :lg="6">
+          <el-card class="product-card" :class="{ 'sold-card': product.status === 'SOLD' }" @click="goDetail(product.id)" style="cursor:pointer">
             <div class="product-image-container">
-              <img 
-                :src="product.images?.[0] || '/placeholder-product.jpg'" 
-                class="product-image"
-                :alt="product.title"
-              />
+              <template v-if="getMainImage(product)">
+                <img 
+                  :src="getMainImage(product)" 
+                  class="product-image"
+                  :alt="product.title"
+                />
+              </template>
+              <template v-else>
+                <div class="no-image-placeholder">暂无图片</div>
+              </template>
               <div v-if="product.status === 'SOLD'" class="sold-overlay">
                 <span class="sold-text">已售出</span>
               </div>
-              <div class="product-status" :class="product.status.toLowerCase()">
-                {{ getStatusText(product.status) }}
+              <div v-if="product.status === 'SOLD'" class="product-status sold">
+                已售出
               </div>
             </div>
             
             <div class="product-info">
-              <h4 class="product-title">{{ product.title }}</h4>
-              <p class="product-price">¥{{ product.price }}</p>
-              <p class="product-views">浏览量: {{ product.views || 0 }}</p>
+              <div class="text-line">商品名称：{{ product.title }}</div>
+              <div class="text-line">商品价格：¥{{ product.price }}</div>
+              <p class="product-views text-line">浏览量: -</p>
             </div>
             
             <div class="product-actions">
               <el-button 
                 size="small" 
-                @click="openEdit(product)" 
+                @click.stop="openEdit(product)" 
                 :disabled="product.status === 'SOLD'"
-                :icon="Edit">
+                :icon="Edit" class="action-btn">
                 编辑
               </el-button>
               <el-button 
                 size="small" 
                 type="danger" 
-                @click="del(product)" 
+                @click.stop="del(product)" 
                 :disabled="product.status === 'SOLD'"
-                :icon="Delete">
+                :icon="Delete" class="action-btn">
                 删除
               </el-button>
-              <el-button 
-                v-if="product.status !== 'SOLD'"
-                size="small" 
-                @click="toggleStatus(product)">
-                <el-icon><component :is="product.status === 'ACTIVE' ? Hide : ViewIcon" /></el-icon>
-                {{ product.status === 'ACTIVE' ? '下架' : '上架' }}
-              </el-button>
+
             </div>
           </el-card>
         </el-col>
@@ -262,6 +247,7 @@
 
 <script>
 import { ref, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { 
   Plus, 
   Edit, 
@@ -270,10 +256,7 @@ import {
   Refresh, 
   Goods, 
   Sell, 
-  Collection, 
-  View,
-  Hide,
-  View as ViewIcon
+  View
 } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import api from '@/api'
@@ -288,13 +271,12 @@ export default {
     Refresh,
     Goods,
     Sell,
-    Collection,
-    View,
-    Hide,
-    ViewIcon
+    View
   },
   setup() {
+    const router = useRouter()
     const items = ref([])
+    const displayItems = ref([])
     const page = ref(1)
     const size = ref(8)
     const total = ref(0)
@@ -315,26 +297,24 @@ export default {
     const stats = computed(() => {
       const allItems = items.value
       return {
-        active: allItems.filter(item => item.status === 'ACTIVE').length,
-        sold: allItems.filter(item => item.status === 'SOLD').length,
-        total: allItems.length,
-        views: allItems.reduce((sum, item) => sum + (item.views || 0), 0)
+        available: allItems.filter(item => item.status === 'AVAILABLE').length,
+        sold: allItems.filter(item => item.status === 'SOLD').length
       }
     })
 
     const fetch = async () => {
       try {
-        const params = { 
-          page: page.value, 
-          size: size.value,
-          search: searchQuery.value,
-          status: statusFilter.value,
-          sort: sortBy.value
-        }
-        const res = await api.get('/product/my', { params })
+        const res = await api.get('/product/my')
         const d = res.data.data || {}
-        items.value = d.items || []
-        total.value = d.total || 0
+        items.value = (d.items || []).map(it => {
+          let imgs = []
+          try {
+            const arr = Array.isArray(it.images) ? it.images : JSON.parse(it.images || '[]')
+            imgs = arr.map(x => typeof x === 'string' ? x : (x?.url || x?.src || ''))
+          } catch(e) {}
+          return { ...it, images: imgs }
+        })
+        applyFilters()
       } catch (err) {
         console.error('Failed to fetch products:', err)
         ElMessage.error('获取商品列表失败')
@@ -343,14 +323,13 @@ export default {
 
     const onPageChange = (p) => {
       page.value = p
-      fetch()
+      applyFilters()
     }
 
     const getStatusText = (status) => {
       const statusMap = {
-        'ACTIVE': '在售',
-        'SOLD': '已售',
-        'INACTIVE': '已下架'
+        'AVAILABLE': '未售出',
+        'SOLD': '已售出'
       }
       return statusMap[status] || status
     }
@@ -415,18 +394,18 @@ export default {
       }
     }
 
-    const toggleStatus = async (product) => {
+    const getMainImage = (product) => {
       try {
-        const newStatus = product.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'
-        await api.post('/product/update', {
-          id: product.id,
-          status: newStatus
-        })
-        ElMessage.success(`商品已${newStatus === 'ACTIVE' ? '上架' : '下架'}`)
-        fetch()
-      } catch (err) {
-        ElMessage.error('操作失败')
-      }
+        const imgs = product.images
+        const arr = Array.isArray(imgs) ? imgs : JSON.parse(imgs || '[]')
+        if (arr.length > 0) {
+          const first = arr[0]
+          if (typeof first === 'string') return first
+          if (first && typeof first === 'object') return first.url || first.src || first.data || ''
+        }
+      } catch(e){}
+      if (typeof product.images === 'string' && product.images.startsWith('/')) return product.images
+      return ''
     }
 
     const del = async (product) => {
@@ -451,19 +430,32 @@ export default {
       }
     }
 
+    const applyFilters = () => {
+      let list = [...items.value]
+      const kw = (searchQuery.value || '').trim().toLowerCase()
+      if (kw) list = list.filter(it => (it.title || '').toLowerCase().includes(kw))
+      if (statusFilter.value) list = list.filter(it => it.status === statusFilter.value)
+      if (sortBy.value === 'newest') list.sort((a,b) => (b.created_at || 0) - (a.created_at || 0))
+      else if (sortBy.value === 'price_asc') list.sort((a,b) => (a.price || 0) - (b.price || 0))
+      else if (sortBy.value === 'price_desc') list.sort((a,b) => (b.price || 0) - (a.price || 0))
+      else if (sortBy.value === 'views') list.sort((a,b) => (b.views || 0) - (a.views || 0))
+      total.value = list.length
+      const start = (page.value - 1) * size.value
+      displayItems.value = list.slice(start, start + size.value)
+    }
     const handleSearch = () => {
       page.value = 1
-      fetch()
+      applyFilters()
     }
 
     const handleFilter = () => {
       page.value = 1
-      fetch()
+      applyFilters()
     }
 
     const handleSort = () => {
       page.value = 1
-      fetch()
+      applyFilters()
     }
 
     const resetFilters = () => {
@@ -471,7 +463,7 @@ export default {
       statusFilter.value = ''
       sortBy.value = 'newest'
       page.value = 1
-      fetch()
+      applyFilters()
     }
 
     onMounted(() => {
@@ -480,6 +472,7 @@ export default {
 
     return {
       items,
+      displayItems,
       page,
       size,
       total,
@@ -497,12 +490,13 @@ export default {
       onImageUpload,
       removeImage,
       saveEdit,
-      toggleStatus,
+      getMainImage,
       del,
       handleSearch,
       handleFilter,
       handleSort,
       resetFilters,
+      goDetail: (id) => { if (id) router.push(`/product/${id}`) },
       Plus,
       Edit,
       Delete,
@@ -510,10 +504,7 @@ export default {
       Refresh,
       Goods,
       Sell,
-      Collection,
-      View,
-      Hide,
-      ViewIcon
+      View
     }
   }
 }
@@ -693,6 +684,16 @@ export default {
   transform: scale(1.05);
 }
 
+.no-image-placeholder {
+  width: 100%;
+  height: 100%;
+  background: #f5f7fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+}
+
 .sold-overlay {
   position: absolute;
   top: 0;
@@ -740,6 +741,12 @@ export default {
   padding: 16px;
 }
 
+.text-line {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .product-title {
   font-size: 1.1rem;
   font-weight: 600;
@@ -764,15 +771,19 @@ export default {
 }
 
 .product-actions {
-  padding: 0 16px 16px;
+  padding: 16px;
   display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
 }
 
-.product-actions .el-button {
-  flex: 1;
-  min-width: 60px;
+.product-actions .el-button,
+.action-btn {
+  width: 120px !important;
+  box-sizing: border-box;
+  display: inline-flex;
+  justify-content: center;
 }
 
 .pagination-container {

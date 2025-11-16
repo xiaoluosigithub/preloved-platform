@@ -85,7 +85,7 @@ export default {
     onCommentsPageChange(p){ this.commentsPage = p; this.fetchComments() },
     async toggleFavorite(){
       const token = localStorage.getItem('token')
-      if (!token) { this.$message.warning('请先登录'); return }
+      if (!token) { this.$message.warning('未登录请先登录'); this.$router.push('/login'); return }
       try {
         const res = await api.post(`/products/${this.product.id}/favorite`)
         const d = res.data.data || {}
@@ -95,7 +95,7 @@ export default {
     },
     async toggleLike(){
       const token = localStorage.getItem('token')
-      if (!token) { this.$message.warning('请先登录'); return }
+      if (!token) { this.$message.warning('未登录请先登录'); this.$router.push('/login'); return }
       try {
         const res = await api.post(`/products/${this.product.id}/like`)
         const d = res.data.data || {}
@@ -105,7 +105,7 @@ export default {
     },
     async postComment(){
       const token = localStorage.getItem('token')
-      if (!token) { this.$message.warning('请先登录'); return }
+      if (!token) { this.$message.warning('未登录请先登录'); this.$router.push('/login'); return }
       if(!this.commentText || !this.commentText.trim()) { this.$message.warning('请输入评论内容'); return }
       try {
         await api.post(`/products/${this.product.id}/comments`, { content: this.commentText })
@@ -119,6 +119,8 @@ export default {
       else this.$router.push('/')
     },
     goBuy(){
+      const token = localStorage.getItem('token')
+      if (!token) { this.$message.warning('未登录请先登录'); this.$router.push('/login'); return }
       const u = localStorage.getItem('user')
       const me = u ? JSON.parse(u) : null
       const buyerId = Number(me?.id)

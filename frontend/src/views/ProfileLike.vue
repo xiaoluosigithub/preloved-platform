@@ -6,8 +6,8 @@
         <product-card :product="toProduct(p)">
           <template #meta="{ product }">
             <div class="product-meta-inside">
-              <div>商品名称：{{ product.title }}</div>
-              <div>商品价格：¥{{ product.price }}</div>
+              <div class="text-line">商品名称：{{ product.title }}</div>
+              <div class="text-line">商品价格：¥{{ product.price }}</div>
             </div>
           </template>
         </product-card>
@@ -48,6 +48,7 @@ export default {
 
 <style scoped>
 .product-meta-inside { color: var(--text-primary) }
+.text-line { overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
 .action-center { text-align: center; margin-top: 6px }
 :deep(.el-card__body) { padding: 10px }
 </style>
