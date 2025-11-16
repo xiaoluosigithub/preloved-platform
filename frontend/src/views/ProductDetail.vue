@@ -4,9 +4,11 @@
     <el-card class="detail-card">
       <el-row :gutter="20">
         <el-col v-if="images.length > 0" :span="10">
-          <div class="image-gallery">
-            <img v-for="(u,i) in images" :key="i" :src="u" class="gallery-image"/>
-          </div>
+          <el-carousel height="260px" indicator-position="outside" :autoplay="false">
+            <el-carousel-item v-for="(u,i) in images" :key="i">
+              <img :src="u" class="carousel-image"/>
+            </el-carousel-item>
+          </el-carousel>
         </el-col>
         <el-col :span="images.length > 0 ? 14 : 24">
           <div class="info-block">
@@ -132,15 +134,7 @@ export default {
 .back-inline { margin-bottom: 8px }
 .detail-card { padding: 12px }
 .comments-card { margin-top: 16px; padding: 12px }
-.image-gallery { 
-  display: grid; 
-  grid-template-columns: repeat(2, 1fr); 
-  gap: 8px; 
-  max-height: 360px; 
-  overflow: auto; 
-  padding-right: 4px;
-}
-.gallery-image { width: 100%; height: 160px; object-fit: cover; border-radius: 8px }
+.carousel-image { width: 100%; height: 100%; object-fit: cover; border-radius: 8px }
 .info-block { display: flex; flex-direction: column; gap: 10px }
 .info-item { display: flex; gap: 8px; align-items: flex-start }
 .label { color: var(--text-secondary); min-width: 90px }

@@ -24,11 +24,11 @@
 
         <!-- Navigation Menu -->
         <el-card class="nav-card">
+          <el-button type="primary" class="home-btn" @click="$router.push('/')">
+            <el-icon><House /></el-icon>
+            返回首页
+          </el-button>
           <el-menu :default-active="active" class="profile-menu" @select="handleMenuSelect">
-            <el-menu-item index="home" @click="$router.push('/')" class="home-menu-item">
-              <el-icon><House /></el-icon>
-              <span>返回首页</span>
-            </el-menu-item>
             <el-menu-item index="info" @click="go('/profile')">
               <el-icon><User /></el-icon>
               <span>我的资料</span>
@@ -253,6 +253,7 @@ export default {
   border: none;
   transition: all 0.3s ease;
   color: var(--text-primary);
+  background: white;
 }
 
 .profile-menu .el-menu-item:hover {
@@ -261,28 +262,12 @@ export default {
 }
 
 .profile-menu .el-menu-item.is-active {
-  background: transparent;
-  color: var(--primary-color);
+  background: #409EFF;
+  color: white;
   font-weight: 600;
 }
 
-.profile-menu :deep(.el-menu-item.home-menu-item) {
-  background-color: #409EFF !important;
-  color: #000 !important;
-  font-weight: 600;
-  margin-bottom: 8px !important;
-}
-
-.profile-menu :deep(.el-menu-item.home-menu-item:hover) {
-  background-color: #79bbff !important;
-  color: #000 !important;
-  transform: translateY(-1px);
-}
-
-.profile-menu :deep(.el-menu-item.home-menu-item.is-active) {
-  background-color: #409EFF !important;
-  color: #000 !important;
-}
+.home-btn { width: 100%; height: 48px; border-radius: 8px; font-weight: 600; margin-bottom: 8px }
 
 .logout-btn {
   width: 100%;
