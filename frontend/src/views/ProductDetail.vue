@@ -1,38 +1,45 @@
 <template>
   <div style="max-width:900px;margin:20px auto">
-    <div class="detail-header">
-      <el-button type="primary" plain size="small" class="back-btn" @click="$router.back()">
-        <el-icon><ArrowLeft /></el-icon>
-        返回
-      </el-button>
-    </div>
-    <el-card>
-      <h2>{{ product.title }}</h2>
-      <div>¥ {{ product.price }}</div>
-      <div style="margin:12px 0">
-        <img v-for="(u,i) in images" :key="i" :src="u" style="width:160px;margin-right:8px"/>
-      </div>
-      <div v-html="product.description"></div>
+    <el-button type="primary" @click="goBack" class="back-inline">返回</el-button>
+    <el-card class="detail-card">
+      <el-row :gutter="20">
+        <el-col v-if="images.length > 0" :span="10">
+          <div class="image-gallery">
+            <img v-for="(u,i) in images" :key="i" :src="u" class="gallery-image"/>
+          </div>
+        </el-col>
+        <el-col :span="images.length > 0 ? 14 : 24">
+          <div class="info-block">
+            <div class="info-item"><span class="label">商品名称：</span><span>{{ product.title }}</span></div>
+            <div class="info-item"><span class="label">商品价格：</span><span>¥ {{ product.price }}</span></div>
+            <div class="info-item">
+              <span class="label">商品详情：</span>
+              <div class="desc" v-html="product.description"></div>
+            </div>
+            <div class="actions">
+              <el-button link @click="toggleLike">👍 {{ likeCount }} {{ isLiked ? '(已点赞)' : '' }}</el-button>
+              <el-button link @click="toggleFavorite">⭐ {{ favorCount }} {{ isFavorited ? '(已收藏)' : '' }}</el-button>
+              <el-button type="primary" @click="goBuy" :disabled="product.status!=='AVAILABLE'">立即购买</el-button>
+            </div>
+          </div>
+        </el-col>
+      </el-row>
+    </el-card>
 
-      <div style="margin-top:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        <el-button link @click="toggleLike">👍 {{ likeCount }} {{ isLiked ? '(已点赞)' : '' }}</el-button>
-        <el-button link @click="toggleFavorite">⭐ {{ favorCount }} {{ isFavorited ? '(已收藏)' : '' }}</el-button>
-        <el-button type="primary" @click="goBuy" style="margin-left:8px" :disabled="product.status!=='AVAILABLE'">立即购买</el-button>
-      </div>
-
-      <div style="margin-top:20px">
+    <el-card class="comments-card">
+      <div class="comment-editor">
         <el-input type="textarea" v-model="commentText" placeholder="写评论..." :rows="3"></el-input>
-        <el-button type="primary" @click="postComment" style="margin-top:8px">发表评论</el-button>
+        <el-button type="primary" @click="postComment" class="submit-comment">发表评论</el-button>
       </div>
 
-      <div style="margin-top:20px">
+      <div class="comments-section">
         <el-divider>评论 ({{ commentsTotal }})</el-divider>
-        <div v-for="c in comments" :key="c.id" style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #f0f0f0">
-          <img :src="c.avatar || defaultAvatar" style="width:36px;height:36px;border-radius:50%" />
-          <div style="max-width:700px">
-            <div style="font-weight:600">{{ c.nickname || c.username }}</div>
-            <div style="background:#f5f7fa;border-radius:8px;padding:8px 12px;color:#333;line-height:1.6">{{ c.content }}</div>
-            <div style="color:#999;font-size:12px;margin-top:6px">{{ c.created_at }}</div>
+        <div v-for="c in comments" :key="c.id" class="comment-item">
+          <img :src="c.avatar || defaultAvatar" class="comment-avatar" />
+          <div class="comment-content">
+            <div class="comment-author">{{ c.nickname || c.username }}</div>
+            <div class="comment-text">{{ c.content }}</div>
+            <div class="comment-time">{{ c.created_at }}</div>
           </div>
         </div>
         <el-pagination background layout="prev, pager, next" :page-size="commentsSize" :current-page="commentsPage" :total="commentsTotal" @current-change="onCommentsPageChange" />
@@ -44,11 +51,9 @@
 <script>
 import api from '@/api'
 import { ElMessageBox } from 'element-plus'
-import { ArrowLeft } from '@element-plus/icons-vue'
 export default {
   props: ['id'],
-  data(){ return { product:{}, images:[], comments:[], commentText:'', isFavorited:false, favorCount:0, isLiked:false, likeCount:0, commentsPage:1, commentsSize:10, commentsTotal:0, defaultAvatar:'/default-avatar.svg' } },
-  components: { ArrowLeft },
+  data(){ return { product:{}, images:[], comments:[], commentText:'', isFavorited:false, favorCount:0, isLiked:false, likeCount:0, commentsPage:1, commentsSize:10, commentsTotal:0, defaultAvatar:'https://via.placeholder.com/36' } },
   async mounted(){
     const pid = this.$route.params.id || this.id
     const res = await api.get(`/products/${pid}`)
@@ -107,6 +112,10 @@ export default {
         await this.fetchComments()
       } catch(e){ this.$message.error(e.response?.data?.msg || '评论失败') }
     },
+    goBack(){
+      if (window.history.length > 1) this.$router.back()
+      else this.$router.push('/')
+    },
     goBuy(){
       const u = localStorage.getItem('user')
       const me = u ? JSON.parse(u) : null
@@ -120,6 +129,30 @@ export default {
 </script>
 
 <style scoped>
-.detail-header { display: flex; justify-content: flex-start; margin-bottom: 8px; }
-.back-btn { display: inline-flex; align-items: center; gap: 6px; }
+.back-inline { margin-bottom: 8px }
+.detail-card { padding: 12px }
+.comments-card { margin-top: 16px; padding: 12px }
+.image-gallery { 
+  display: grid; 
+  grid-template-columns: repeat(2, 1fr); 
+  gap: 8px; 
+  max-height: 360px; 
+  overflow: auto; 
+  padding-right: 4px;
+}
+.gallery-image { width: 100%; height: 160px; object-fit: cover; border-radius: 8px }
+.info-block { display: flex; flex-direction: column; gap: 10px }
+.info-item { display: flex; gap: 8px; align-items: flex-start }
+.label { color: var(--text-secondary); min-width: 90px }
+.desc { color: #333; line-height: 1.6 }
+.actions { margin-top: 8px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap }
+.comment-editor { margin-top: 20px }
+.submit-comment { margin-top: 8px }
+.comments-section { margin-top: 20px }
+.comment-item { display: flex; gap: 10px; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 12px; background: #fff }
+.comment-avatar { width: 36px; height: 36px; border-radius: 50% }
+.comment-content { max-width: 700px }
+.comment-author { font-weight: 600 }
+.comment-text { background:#f5f7fa; border-radius:8px; padding:8px 12px; color:#333; line-height:1.6; margin-top:4px }
+.comment-time { color:#999; font-size:12px; margin-top:6px }
 </style>

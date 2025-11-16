@@ -27,7 +27,7 @@
       </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="submit">发布</el-button>
-        <el-button @click="$router.back()" style="margin-left:8px">取消发布</el-button>
+        <el-button @click="goBack" style="margin-left:8px">取消发布</el-button>
       </el-form-item>
     </el-form>
   </div>
@@ -59,6 +59,10 @@ export default {
       } catch (e) {
         this.$message.error(e.response?.data?.msg || e.message)
       }
+    },
+    goBack(){
+      if (window.history.length > 1) this.$router.back()
+      else this.$router.push('/')
     }
   }
 }

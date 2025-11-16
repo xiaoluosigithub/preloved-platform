@@ -15,19 +15,75 @@
         class="profile-form"
         @submit.prevent="save">
         
+        <!-- Avatar Section -->
         <el-form-item label="头像" class="avatar-form-item">
-          <AvatarUploader v-model="form.avatar" />
+          <div class="avatar-upload-section">
+            <div class="avatar-preview">
+              <img 
+                v-if="form.avatar" 
+                :src="form.avatar" 
+                class="avatar-image"
+                alt="用户头像"
+              />
+              <div v-else class="avatar-placeholder">
+                <el-icon size="32"><User /></el-icon>
+              </div>
+            </div>
+            <div class="avatar-actions">
+              <el-upload 
+                :action="'/api/upload/image'" 
+                :on-success="onAvatarUpload" 
+                :show-file-list="false" 
+                name="file"
+                class="avatar-upload">
+                <el-button type="primary" :icon="Camera" size="default">
+                  上传头像
+                </el-button>
+              </el-upload>
+              <el-button 
+                v-if="form.avatar" 
+                link 
+                @click="removeAvatar"
+                class="remove-avatar-btn">
+                移除头像
+              </el-button>
+            </div>
+          </div>
         </el-form-item>
 
-        <BasicInfoForm 
-          :username="form.username"
-          :nickname="form.nickname"
-          :signature="form.signature"
-          @update:nickname="v => form.nickname = v"
-          @update:signature="v => form.signature = v"
-        />
-
-        
+        <!-- Basic Info Section -->
+        <div class="form-section">
+          <h3 class="section-title">基本信息</h3>
+          
+          <el-form-item label="昵称" prop="nickname">
+            <el-input 
+              v-model="form.nickname" 
+              placeholder="请输入昵称"
+              size="large"
+              :prefix-icon="User">
+            </el-input>
+          </el-form-item>
+          
+          <el-form-item label="用户名" prop="username">
+            <el-input 
+              v-model="form.username" 
+              disabled
+              size="large"
+              :prefix-icon="Avatar">
+            </el-input>
+          </el-form-item>
+          
+          <el-form-item label="个性签名" prop="signature">
+            <el-input 
+              v-model="form.signature" 
+              type="textarea"
+              :rows="3"
+              placeholder="介绍一下自己吧..."
+              maxlength="100"
+              show-word-limit>
+            </el-input>
+          </el-form-item>
+        </div>
 
         <!-- Action Buttons -->
         <el-form-item class="form-actions">
@@ -40,7 +96,6 @@
             <el-icon><Check /></el-icon>
             保存修改
           </el-button>
-          
         </el-form-item>
       </el-form>
     </el-card>
@@ -50,21 +105,21 @@
 <script>
 import { ref, onMounted } from 'vue'
 import { 
-  Check,
-  User 
+  User, 
+  Avatar, 
+  Camera, 
+  Check 
 } from '@element-plus/icons-vue'
-import api from '@/api'
 import { ElMessage } from 'element-plus'
-import AvatarUploader from '@/components/profile/AvatarUploader.vue'
-import BasicInfoForm from '@/components/profile/BasicInfoForm.vue'
+import api from '@/api'
 
 export default {
   name: 'ProfileInfo',
   components: {
-    Check,
     User,
-    AvatarUploader,
-    BasicInfoForm
+    Avatar,
+    Camera,
+    Check
   },
   setup() {
     const form = ref({
@@ -91,7 +146,18 @@ export default {
       }
     }
 
-    
+    const onAvatarUpload = (res) => {
+      const url = res?.data?.data || res?.data || res
+      if (url) {
+        form.value.avatar = url
+        ElMessage.success('头像上传成功')
+      }
+    }
+
+    const removeAvatar = () => {
+      form.value.avatar = ''
+      ElMessage.success('头像已移除')
+    }
 
     const save = async () => {
       if (!form.value.nickname?.trim()) {
@@ -133,8 +199,13 @@ export default {
     return {
       form,
       loading,
+      onAvatarUpload,
+      removeAvatar,
       save,
-      
+      User,
+      Avatar,
+      Camera,
+      Check
     }
   }
 }
@@ -255,24 +326,7 @@ export default {
 }
 
 .save-btn {
-  background: #409EFF;
-  border: none;
-  color: #fff;
   font-weight: 600;
-  margin-right: 16px;
-}
-
-.reset-btn {
-  border: 2px solid var(--border-color);
-  background: white;
-  font-weight: 600;
-  transition: all 0.3s ease;
-}
-
-.reset-btn:hover {
-  border-color: var(--primary-color);
-  color: var(--primary-color);
-  transform: translateY(-2px);
 }
 
 /* Responsive Design */
@@ -295,7 +349,6 @@ export default {
   
   .save-btn {
     margin-right: 0;
-    margin-bottom: 12px;
   }
 }
 

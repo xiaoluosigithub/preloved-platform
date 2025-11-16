@@ -9,8 +9,7 @@
           <h1 class="logo-text">Secondhand</h1>
         </div>
 
-        <!-- Navigation -->
-        <nav class="main-nav"></nav>
+        <!-- Navigation removed per requirement -->
 
         <!-- User Section -->
         <div class="user-section">
@@ -18,10 +17,9 @@
             <el-dropdown trigger="click" @command="handleCommand">
               <div class="user-avatar-wrapper">
                 <img 
-                  :src="(user && user.avatar && user.avatar.trim()) ? user.avatar : defaultAvatar" 
+                  :src="avatarSrc" 
                   class="user-avatar"
-                  :alt="user.nickname || user.username"
-                  @error="onAvatarError" />
+                  :alt="user.nickname || user.username" />
                 <span class="username">{{ user.nickname || user.username }}</span>
                 <el-icon class="dropdown-icon"><ArrowDown /></el-icon>
               </div>
@@ -71,22 +69,27 @@
 </template>
 
 <script>
-import { ArrowDown, Plus, User, SwitchButton } from '@element-plus/icons-vue'
+import { ArrowDown, User, SwitchButton } from '@element-plus/icons-vue'
 import api from '@/api'
 
 export default {
   name: 'App',
   components: {
     ArrowDown,
-    Plus,
     User,
     SwitchButton
   },
   data() { 
     return { 
       user: null, 
-      defaultAvatar: '/default-avatar.svg' 
+      defaultAvatar: 'https://via.placeholder.com/28' 
     } 
+  },
+  computed: {
+    avatarSrc() {
+      const a = this.user?.avatar
+      return (a && String(a).trim().length > 0) ? a : this.defaultAvatar
+    }
   },
   mounted(){
     this.refreshUser()
@@ -98,20 +101,18 @@ export default {
     window.removeEventListener('auth-changed', this.refreshUser)
   },
   methods:{
-    refreshUser(){
+    async refreshUser(){
+      const token = localStorage.getItem('token')
       const u = localStorage.getItem('user')
       this.user = u ? JSON.parse(u) : null
-      const token = localStorage.getItem('token')
       if (token) {
-        api.get('/user/me').then(res => {
-          const data = res?.data?.data || {}
-          this.user = data
-          try { localStorage.setItem('user', JSON.stringify(data)) } catch(e) {}
-        }).catch(() => {})
+        try {
+          const res = await api.get('/user/me')
+          const me = res.data?.data || {}
+          this.user = me
+          localStorage.setItem('user', JSON.stringify(me))
+        } catch(e){}
       }
-    },
-    onAvatarError(e){
-      e.target.src = this.defaultAvatar
     },
     onStorage(e){
       if (e.key === 'user' || e.key === 'token') this.refreshUser()
